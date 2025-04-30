@@ -1,0 +1,23 @@
+private fun convertVideoToAudio(uri: Uri) {
+    val filePath = getRealPathFromURI(uri)
+    val outputFilePath = "${getExternalFilesDir(null)}/output.mp3"
+
+    val command = "-i $filePath -vn -ar 44100 -ac 2 -ab 192k -f mp3 $outputFilePath"
+    FFmpeg.executeAsync(command.split(" ".toRegex()).toTypedArray()) { executionId, returnCode ->
+        if (returnCode == RETURN_CODE_SUCCESS) {
+            Toast.makeText(this, "تم التحويل بنجاح!", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "فشل في التحويل", Toast.LENGTH_SHORT).show()
+        }
+    }
+}
+
+private fun getRealPathFromURI(contentUri: Uri): String {
+    val proj = arrayOf(MediaStore.Video.Media.DATA)
+    val cursor = contentResolver.query(contentUri, proj, null, null, null)
+    cursor?.moveToFirst()
+    val columnIdx = cursor?.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
+    val path = cursor?.getString(columnIdx!!)
+    cursor?.close()
+    return path!!
+}
